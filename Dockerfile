@@ -8,7 +8,7 @@ RUN \
                     make bison flex &&\
   rm -rf /var/lib/apt/lists/* &&\
   apt-get clean -yq
-  
+
 
 # donwload java 8 directly and extract
 RUN wget -qO-  --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u45-b14/jdk-8u45-linux-x64.tar.gz|tar xvz
@@ -27,15 +27,22 @@ RUN \
 ENV HOME /root
 WORKDIR /root
 
-
 RUN apt-get update \
     && apt-get install -y apt-utils
 RUN apt-get install -y autoconf automake libtool curl make unzip wget git
 
-RUN apt-get install -y ant ivy log4cxx jansson cppunit proj4 gdal
+RUN apt-get install -y ant ivy
+
+RUN apt-get install -y liblog4cxx10v5 libjansson-dev libcppunit-dev
+RUN apt-get install -y software-properties-common
+RUN add-apt-repository ppa:ubuntugis/ppa && apt-get update && apt-get install -y gdal-bin
+RUN apt-get install -y binutils libproj-dev
+RUN apt-get install -y liblog4cxx-dev liblog4cxx10-dev
+
+RUN apt-get install -y libpthread-stubs0-dev
+RUN apt-get install -y libgdal-dev
 
 ADD . /home/cpp/mr4c
 WORKDIR /home/cpp/mr4c
 RUN ./build_all
 RUN ./deploy_all
-

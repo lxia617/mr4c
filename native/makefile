@@ -38,8 +38,8 @@ TEST_OBJ_DIRS := $(patsubst $(TEST)%, $(TEST_OBJ_DIR)%, $(TEST_SRC_DIRS) )
 
 GCC := g++ -std=c++0x
 
-EXT_LIBS := -llog4cxx -ljansson
-EXT_LIBS_TEST := $(EXT_LIBS) -lcppunit
+EXT_LIBS := -llog4cxx -ljansson -lpthread
+EXT_LIBS_TEST := $(EXT_LIBS) -lcppunit -lpthread
 
 LIB := $(DIST)/libmr4c.so
 LOCAL_EXE := $(EXE)/test_local
