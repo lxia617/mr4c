@@ -42,7 +42,7 @@ RUN apt-get install -y liblog4cxx-dev liblog4cxx10-dev
 RUN apt-get install -y libpthread-stubs0-dev
 RUN apt-get install -y libgdal-dev
 
-ADD . /usr/local/mr4c
-WORKDIR /usr/local/mr4c
+ADD . /home/cpp/mr4c
+WORKDIR /home/cpp/mr4c
 RUN ./build_all
 RUN ./deploy_all
