@@ -39,7 +39,7 @@ TEST_OBJ_DIRS := $(patsubst $(TEST)%, $(TEST_OBJ_DIR)%, $(TEST_SRC_DIRS) )
 GCC := g++ -std=c++0x
 
 MR4C_API ?= ../native/src/cpp/api
-INCLUDES := -I$(API) -I$(MR4C_API)
+INCLUDES := -I$(API) -I$(MR4C_API) -I/usr/include
 INCLUDES_TEST=-I$(TEST_API) $(INCLUDES)
 
 MR4C_LIB ?= ../native/dist
