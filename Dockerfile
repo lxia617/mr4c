@@ -48,3 +48,8 @@ RUN make
 RUN make deploy
 ENV MR4C_HOME /usr/local/mr4c
 RUN /usr/local/mr4c/native/bin/post_install
+
+WORKDIR /home/cpp/mr4c/java
+RUN tools/build_yarn
+RUN ant deploy
+RUN /usr/local/mr4c/java/bin/post_install
