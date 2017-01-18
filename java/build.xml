@@ -135,6 +135,7 @@ xmlns:ivy="antlib:org.apache.ivy.ant">
 			<arg value="-runtime" />
 			<arg value="JNAerator" />
 			<arg value="-I${mr4c.api.dir}" />
+			<arg value="-I/usr/lib/gcc/x86_64-linux-gnu/5/include/" />
 			<!--arg value="-I/usr/lib/gcc/x86_64-linux-gnu/4.4/include" /--> <!-- for stdbool.h -->
 			<arg value="${mr4c.api.dir}/external_capi.h" />
 			<classpath refid="compile.classpath" />
