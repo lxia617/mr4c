@@ -1,55 +1,63 @@
-FROM ubuntu:16.04
+FROM ubuntu:15.10
 
-RUN \
-  apt-get update && \
-  apt-get install -y git man gcc vim-nox cscope exuberant-ctags silversearcher-ag \
-                    screen wget curl libcurl4-openssl-dev xz-utils ncdu pax-utils \
-                    pkg-config zlib1g-dev python unzip zip g++ bash-completion \
-                    make bison flex &&\
-  rm -rf /var/lib/apt/lists/* &&\
-  apt-get clean -yq
+#
+# Development tools
+#
+RUN apt-get -y update && apt-get -y install \
+  git vim subversion wget zip unzip screen \
+  openjdk-7-jdk openjdk-7-jre-headless openjdk-7-jre-lib \
+  ant ant-optional ivy
 
+#
+# link Ant Ivy in
+#
+RUN ln -s -T /usr/share/java/ivy.jar /usr/share/ant/lib/ivy.jar
 
-# donwload java 8 directly and extract
-RUN wget -qO-  --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u45-b14/jdk-8u45-linux-x64.tar.gz|tar xvz
-ENV JAVA_HOME /jdk1.8.0_45
-ENV PATH $JAVA_HOME/bin:$PATH
+#
+# install CDH Repo and install hadoop client
+#
+RUN apt-get -y install apt-transport-https
+RUN wget http://archive.cloudera.com/cdh5/one-click-install/trusty/amd64/cdh5-repository_1.0_all.deb && \
+    dpkg -i cdh5-repository_1.0_all.deb && \
+    rm -f cdh5-repository_1.0_all.deb && \
+    apt-get update && apt-get -y install hadoop-client
 
-# 1. git clone the vim setting
-# 2. git clone the env setting
-RUN \
-  rm -fr ~/.vim ~/.vimrc &&\
-  cd ~ && git clone https://github.com/chin33z/dotvim.git ~/.vim &&\
-  ln -s ~/.vim/vimrc ~/.vimrc &&\
-  cd ~ && git clone https://github.com/chin33z/dotfiles.git ~/dotfiles &&\
-  cd dotfiles && ./link.sh
+#
+# mr4c required development libraries
+#
+RUN apt-get -y install \
+  libgdal-dev  build-essential autoconf libproj-dev libcppunit-dev libcppunit-dev libjansson-dev libjansson4  \
+  libaprutil1 libaprutil1-dev libapr1-dev libapr1
 
-ENV HOME /root
-WORKDIR /root
+#
+# for gdal include headers (and mr4c build will need this)
+#
+ENV CPLUS_INCLUDE_PATH /usr/include/gdal
+ENV C_INCLUDE_PATH /usr/include/gdal
 
-RUN apt-get update \
-    && apt-get install -y apt-utils
-RUN apt-get install -y autoconf automake libtool curl make unzip wget git
+#
+# download log4j src and compile it
+#
+RUN mkdir -p /opt/build && cd /opt/build && svn checkout http://svn.apache.org/repos/asf/incubator/log4cxx/trunk apache-log4cxx && \
+   cd apache-log4cxx && \
+   ./autogen.sh &&  \
+   ./configure && \
+   make && \
+   make install && \
+   ldconfig
 
-RUN apt-get install -y ant ivy
+#
+# download mr4c
+#
+RUN mkdir /opt/build/mr4c && \
+    cd /opt/build/mr4c && \
+    git clone https://github.com/google/mr4c.git .
 
-RUN apt-get install -y liblog4cxx10v5 libjansson-dev libcppunit-dev
-RUN apt-get install -y software-properties-common
-RUN add-apt-repository ppa:ubuntugis/ppa && apt-get update && apt-get install -y gdal-bin
-RUN apt-get install -y binutils libproj-dev
-RUN apt-get install -y liblog4cxx-dev liblog4cxx10-dev
+#
+# build and install mr4c
+#
+RUN cd /opt/build/mr4c && \
+    ./build_all && \
+    ./deploy_all
 
-RUN apt-get install -y libpthread-stubs0-dev
-RUN apt-get install -y libgdal-dev
-
-ADD . /home/cpp/mr4c
-WORKDIR /home/cpp/mr4c/native
-RUN make
-RUN make deploy
-ENV MR4C_HOME /usr/local/mr4c
-RUN /usr/local/mr4c/native/bin/post_install
-
-WORKDIR /home/cpp/mr4c/java
-RUN tools/build_yarn
-RUN ant deploy
-RUN /usr/local/mr4c/java/bin/post_install
+VOLUME ["/opt/projects"]
